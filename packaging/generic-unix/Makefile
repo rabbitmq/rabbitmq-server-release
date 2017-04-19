@@ -14,9 +14,10 @@ $(error Cannot determine version; please specify VERSION)
 endif
 endif
 
-SOURCE_DIR = rabbitmq-server-$(VERSION)
-TARGET_DIR = rabbitmq_server-$(VERSION)
-TARGET_TARBALL = rabbitmq-server-generic-unix-$(VERSION)
+ORIG_SOURCE_DIR = rabbitmq-server-$(VERSION)
+SOURCE_DIR = pivotal-rabbitmq-server-$(VERSION)
+TARGET_DIR = pivotal-rabbitmq_server-$(VERSION)
+TARGET_TARBALL = pivotal-rabbitmq-server-generic-unix-$(VERSION)
 
 unexport DEPS_DIR
 unexport ERL_LIBS
@@ -27,7 +28,8 @@ all: dist
 
 dist:
 	xzcat $(SOURCE_DIST_FILE) | tar -xf -
-
+	mv $(ORIG_SOURCE_DIR) $(SOURCE_DIR)
+	cd $(SOURCE_DIR); patch -p1 < ../../commercial-patches/rabbitmq-server-$(VERSION)-pivotal.patch
 # web-manpages are not used by generic-unix but by `make release` in the.
 # Umbrella. Those manpages are copied to www.rabbitmq.com
 	$(MAKE) -C $(SOURCE_DIR) \
@@ -41,6 +43,10 @@ dist:
         && mv $(TARGET_DIR)/sbin/rabbitmq-defaults.tmp $(TARGET_DIR)/sbin/rabbitmq-defaults
 	chmod 0755 $(TARGET_DIR)/sbin/rabbitmq-defaults
 
+	cp ../OSL/RabbitMQ_OSL.txt $(TARGET_DIR)/RabbitMQ_$(VERSION)_OSL.txt
+	cp ../EULA/EULA_Pivotal_RabbitMQ.txt $(TARGET_DIR)/EULA_Pivotal_RabbitMQ_$(VERSION).txt
+	cp README.pivotal $(TARGET_DIR)
+
 	mkdir -p $(TARGET_DIR)/etc/rabbitmq
 
 	find $(TARGET_DIR) -print0 | LC_COLLATE=C sort -z | \
@@ -53,7 +59,7 @@ dist:
 	fi
 
 clean: clean_partial
-	rm -f rabbitmq-server-generic-unix-*.tar.xz
+	rm -f pivotal-rabbitmq-server-generic-unix-*.tar.xz
 
 clean_partial:
-	rm -rf rabbitmq-server-* rabbitmq_server-*
+	rm -rf pivotal-rabbitmq-server-* pivotal-rabbitmq_server-*
