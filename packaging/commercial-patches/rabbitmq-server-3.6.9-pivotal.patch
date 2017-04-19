@@ -1,0 +1,18 @@
+diff -uNr rabbitmq-server-3.6.9/deps/rabbit/src/rabbit_plugins_main.erl rabbitmq-server-3.6.9p/deps/rabbit/src/rabbit_plugins_main.erl
+--- rabbitmq-server-3.6.9/deps/rabbit/src/rabbit_plugins_main.erl	2017-03-16 14:19:29.000000000 -0700
++++ rabbitmq-server-3.6.9p/deps/rabbit/src/rabbit_plugins_main.erl	2017-04-19 15:15:53.000000000 -0700
+@@ -194,6 +194,14 @@
+     end,
+     [format_plugin(P, Enabled, EnabledImplicitly, Running,
+                    Format, MaxWidth) || P <- Plugins1],
++    io:format("~nPivotal officially maintains and supports the plugins:~n~n"
++              "  rabbitmq_auth_backend_ldap, rabbitmq_auth_mechanism_ssl,~n"
++              "  rabbitmq_consistent_hash_exchange, rabbitmq_federation,~n"
++              "  rabbitmq_federation_management, rabbitmq_jms_topic_exchange,~n"
++              "  rabbitmq_management, rabbitmq_management_agent,~n"
++              "  rabbitmq_mqtt, rabbitmq_sharding, rabbitmq_shovel,~n"
++              "  rabbitmq_shovel_management, rabbitmq_stomp, rabbitmq_top~n"
++              "  and rabbitmq_trust_store.~n~n"),
+     ok.
+ 
+ format_plugin(#plugin{name = Name, version = OnDiskVersion,
