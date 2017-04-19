@@ -20,7 +20,7 @@ dist: rabbitmq-$(VERSION).nsi rabbitmq_server-$(VERSION)
 
 	if test "$(PACKAGES_DIR)"; then \
 		mkdir -p "$(PACKAGES_DIR)"; \
-		mv rabbitmq-server-$(VERSION).exe "$(PACKAGES_DIR)"; \
+		mv pivotal-rabbitmq-server-$(VERSION).exe "$(PACKAGES_DIR)"; \
 	fi
 
 rabbitmq-$(VERSION).nsi: rabbitmq_nsi.in
@@ -33,4 +33,4 @@ rabbitmq_server-$(VERSION):
 	unzip -q $(ZIP_DIR)/$(ZIP)
 
 clean:
-	rm -rf rabbitmq-*.nsi rabbitmq_server-* rabbitmq-server-*.exe
+	rm -rf rabbitmq-*.nsi rabbitmq_server-* pivotal-rabbitmq-server-*.exe

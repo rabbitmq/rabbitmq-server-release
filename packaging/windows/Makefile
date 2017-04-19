@@ -27,6 +27,9 @@ all: dist
 
 dist:
 	xzcat $(SOURCE_DIST_FILE) | tar -xf -
+	cp ../OSL/RabbitMQ_OSL.txt $(SOURCE_DIR)/LICENSE_RabbitMQ_$(VERSION)_OSL.txt
+	cp ../EULA/EULA_Pivotal_RabbitMQ.txt $(SOURCE_DIR)/LICENSE_EULA_Pivotal_RabbitMQ_$(VERSION).txt
+	cd $(SOURCE_DIR); patch -p1 < ../../commercial-patches/rabbitmq-server-$(VERSION)-pivotal.patch
 	$(MAKE) -C $(SOURCE_DIR) install-windows \
 		DESTDIR=$(abspath $(TARGET_DIR)) \
 		WINDOWS_PREFIX=
