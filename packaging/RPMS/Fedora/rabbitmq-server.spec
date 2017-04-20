@@ -1,7 +1,14 @@
 %define debug_package %{nil}
 %define erlang_minver R16B-03
 
-Name: rabbitmq-server
+%define base_name pivotal-rabbitmq-server
+%define RabbitMQ_User_Home /opt/pivotal
+
+%define OSL_File_Name RabbitMQ_%%VERSION%%_OSL.txt
+%define EULA_File_Name EULA_Pivotal_RabbitMQ_%%VERSION%%.txt
+
+Patch: rabbitmq-server-%%VERSION%%-pivotal.patch
+Name: %{base_name}
 Version: %%VERSION%%
 Release: 1%{?dist}
 License: MPLv1.1 and MIT and ASL 2.0 and BSD
@@ -11,6 +18,8 @@ Source1: rabbitmq-server.init
 Source2: rabbitmq-server.logrotate
 Source3: rabbitmq-server.service
 Source4: rabbitmq-server.tmpfiles
+Source5: %{OSL_File_Name}
+Source6: %{EULA_File_Name}
 URL: http://www.rabbitmq.com/
 BuildArch: noarch
 BuildRequires: erlang >= %{erlang_minver}, python-simplejson, xmlto, libxslt, gzip, sed, zip, rsync
@@ -35,22 +44,27 @@ Requires(pre): %%REQUIRES%%
 %description
 RabbitMQ is an open source multi-protocol messaging broker.
 
-# We want to install into /usr/lib, even on 64-bit platforms
-%define _rabbit_libdir %{_exec_prefix}/lib/rabbitmq
+# Commercial packages install to /opt/pivotal by company convention...
+%define _rabbit_libdir %{RabbitMQ_User_Home}/rabbitmq
 %define _rabbit_erllibdir %{_rabbit_libdir}/lib/rabbitmq_server-%{upstream_version}
 %define _rabbit_server_ocf scripts/rabbitmq-server.ocf
 %define _plugins_state_dir %{_localstatedir}/lib/rabbitmq/plugins
 %define _rabbit_server_ha_ocf scripts/rabbitmq-server-ha.ocf
-
+%define _rabbit_osl_file %{_builddir}/%{base_name}-%{version}/`basename %{S:5}`
+%define _rabbit_eula_file %{_builddir}/%{base_name}-%{version}/`basename %{S:6}`
+%define _opt_pivotal /opt/pivotal
 
 %define _maindir %{buildroot}%{_rabbit_erllibdir}
 
 
 %prep
 %setup -q -n %{name}-%{upstream_version}
+%patch -p 1
 
 %build
-cp -a deps/rabbit/docs/README-for-packages %{_builddir}/rabbitmq-server-%{upstream_version}/README
+cp %{S:5} %{_rabbit_osl_file}
+cp %{S:6} %{_rabbit_eula_file}
+cp -a deps/rabbit/docs/README-for-packages %{_builddir}/pivotal-rabbitmq-server-%{upstream_version}/README
 env -u DEPS_DIR make %{?_smp_mflags} dist manpages
 
 %install
@@ -77,7 +91,8 @@ mkdir -p %{buildroot}%{_sysconfdir}/rabbitmq
 
 mkdir -p %{buildroot}%{_sbindir}
 sed -e 's|@SU_RABBITMQ_SH_C@|su rabbitmq -s /bin/sh -c|' \
-	-e 's|@STDOUT_STDERR_REDIRECTION@||' \
+    -e 's|@STDOUT_STDERR_REDIRECTION@||' \
+    -e 's|/usr/lib/rabbitmq|/opt/pivotal/rabbitmq|' \
 	< scripts/rabbitmq-script-wrapper \
 	> %{buildroot}%{_sbindir}/rabbitmqctl
 chmod 0755 %{buildroot}%{_sbindir}/rabbitmqctl
@@ -104,14 +119,15 @@ if [ $1 -gt 1 ]; then
   /sbin/service rabbitmq-server stop
 fi
 
-# create rabbitmq group
-if ! getent group rabbitmq >/dev/null; then
-        groupadd -r rabbitmq
+# create pivotal group---by convention commercial builds have an associated
+# user named after the product who belongs to group 'pivotal'
+if ! getent group pivotal >/dev/null; then
+        groupadd -r pivotal
 fi
 
-# create rabbitmq user
+# create rabbitmq user and add it to pivotal group
 if ! getent passwd rabbitmq >/dev/null; then
-        useradd -r -g rabbitmq -d %{_localstatedir}/lib/rabbitmq rabbitmq \
+        useradd -r -g pivotal -d %{_localstatedir}/lib/rabbitmq rabbitmq \
             -c "RabbitMQ messaging server"
 fi
 
@@ -185,9 +201,9 @@ fi
 
 %files -f ../%{name}.files
 %defattr(-,root,root,-)
-%attr(0755, rabbitmq, rabbitmq) %dir %{_localstatedir}/lib/rabbitmq
-%attr(0750, rabbitmq, rabbitmq) %dir %{_localstatedir}/lib/rabbitmq/mnesia
-%attr(0755, rabbitmq, rabbitmq) %dir %{_localstatedir}/log/rabbitmq
+%attr(0755, rabbitmq, pivotal) %dir %{_localstatedir}/lib/rabbitmq
+%attr(0750, rabbitmq, pivotal) %dir %{_localstatedir}/lib/rabbitmq/mnesia
+%attr(0755, rabbitmq, pivotal) %dir %{_localstatedir}/log/rabbitmq
 %dir %{_sysconfdir}/rabbitmq
 
 %if 0%{?rhel} < 7
@@ -197,6 +213,8 @@ fi
 %config(noreplace) %{_sysconfdir}/logrotate.d/rabbitmq-server
 %doc LICENSE*
 %doc README
+%doc %{OSL_File_Name}
+%doc %{EULA_File_Name}
 %doc deps/rabbit/docs/rabbitmq.config.example
 %doc deps/rabbit/docs/set_rabbitmq_policy.sh.example
 
@@ -204,6 +222,9 @@ fi
 rm -rf %{buildroot}
 
 %changelog
+* Wed Apr 19 2017 jkuch@pivotal.io 3.6.9-1
+- New Upstream Pivotal Commercial Release
+
 * Wed Mar 29 2017 michael@rabbitmq.com 3.6.9-1
 - New Upstream Release
 

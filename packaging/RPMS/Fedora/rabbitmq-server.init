@@ -24,9 +24,10 @@ DAEMON=/usr/sbin/${NAME}
 CONTROL=/usr/sbin/rabbitmqctl
 DESC=rabbitmq-server
 USER=rabbitmq
+GROUP=pivotal
 ROTATE_SUFFIX=
 PID_FILE=/var/run/rabbitmq/pid
-RABBITMQ_ENV=/usr/lib/rabbitmq/bin/rabbitmq-env
+RABBITMQ_ENV=/opt/pivotal/rabbitmq/bin/rabbitmq-env
 
 START_PROG= # Set when building package
 LOCK_FILE=/var/lock/subsys/$NAME
@@ -46,7 +47,7 @@ ensure_pid_dir () {
     PID_DIR=`dirname ${PID_FILE}`
     if [ ! -d ${PID_DIR} ] ; then
         mkdir -p ${PID_DIR}
-        chown -R ${USER}:${USER} ${PID_DIR}
+        chown -R ${USER}:${GROUP} ${PID_DIR}
         chmod 755 ${PID_DIR}
     fi
 }

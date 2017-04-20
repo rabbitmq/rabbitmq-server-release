@@ -88,8 +88,19 @@ ifneq ($(SIGNING_KEY),)
 	@echo
 endif
 # Create the build tree and populate it.
-	mkdir -p BUILD SOURCES SPECS SRPMS RPMS tmp
-	cp $(SOURCE_DIST_FILE) SOURCES/$(RPM_ORIG_TARBALL)
+	mkdir -p BUILD SOURCES SPECS SRPMS RPMS tmp dist
+# Chicanery to effect change of source archive name to match
+# commercial package name
+	cp $(SOURCE_DIST_FILE) dist
+	tar xf dist/`basename $(SOURCE_DIST_FILE)` -C dist
+	rm dist/`basename $(SOURCE_DIST_FILE)`
+	mv dist/rabbitmq-server-$(VERSION) pivotal-rabbitmq-server-$(VERSION)
+	tar cfJ pivotal-rabbitmq-server-$(VERSION).tar.xz pivotal-rabbitmq-server-$(VERSION)
+	rm -rf pivotal-rabbitmq-server-$(VERSION)
+	mv pivotal-rabbitmq-server-$(VERSION).tar.xz dist
+	cp dist/pivotal-rabbitmq-server-$(VERSION).tar.xz SOURCES
+	cp ../../commercial-patches/rabbitmq-server-$(VERSION)-pivotal.patch SOURCES
+# Schlep over various platform specific files.
 	cp rabbitmq-server.spec SPECS/rabbitmq-server.spec.in
 	cp rabbitmq-server.service SOURCES/rabbitmq-server.service
 	cp rabbitmq-server.tmpfiles SOURCES/rabbitmq-server.tmpfiles
@@ -99,6 +110,9 @@ endif
 		< rabbitmq-server.init \
 		> SOURCES/rabbitmq-server.init
 	cp rabbitmq-server.logrotate SOURCES/rabbitmq-server.logrotate
+# Commercial OSL file and EULA
+	cp ../../OSL/RabbitMQ_OSL.txt SOURCES/RabbitMQ_$(VERSION)_OSL.txt
+	cp ../../EULA/EULA_Pivotal_RabbitMQ.txt SOURCES/EULA_Pivotal_RabbitMQ_$(VERSION).txt
 # Possibly update the changelog inside the spec (in the created build
 # directory):
 #   - if it contains an entry for the specified version, do nothing;
