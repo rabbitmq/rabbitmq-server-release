@@ -154,7 +154,7 @@ chmod -R o-rwx,g-w %{_localstatedir}/lib/rabbitmq/mnesia
 if [ $1 = 0 ]; then
   #Complete uninstall
 %if 0%{?fedora} || 0%{?rhel} >= 7
-  systemctl stop rabbitmq-server
+  systemctl stop pivotal-rabbitmq-server
 %else
   /sbin/service rabbitmq-server stop
   /sbin/chkconfig --del rabbitmq-server
