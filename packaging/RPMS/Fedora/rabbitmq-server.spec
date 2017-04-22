@@ -143,7 +143,7 @@ if [ $1 -eq 1 ] ; then
 fi
 /bin/systemctl daemon-reload
 %else
-/sbin/chkconfig --add %{name}
+/sbin/chkconfig --add rabbitmq-server # %{name} BUGBUG Make names EL6/7 consistent?
 %endif
 if [ -f %{_sysconfdir}/rabbitmq/rabbitmq.conf ] && [ ! -f %{_sysconfdir}/rabbitmq/rabbitmq-env.conf ]; then
     mv %{_sysconfdir}/rabbitmq/rabbitmq.conf %{_sysconfdir}/rabbitmq/rabbitmq-env.conf
@@ -157,7 +157,7 @@ if [ $1 = 0 ]; then
   systemctl stop pivotal-rabbitmq-server
 %else
   /sbin/service rabbitmq-server stop
-  /sbin/chkconfig --del rabbitmq-server
+  /sbin/chkconfig --del rabbitmq-server # BUGBUG Make names EL6/7 consistent?
 %endif
 
   # We do not remove /var/log and /var/lib directories
