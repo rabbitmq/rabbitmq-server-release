@@ -24,9 +24,9 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-%{_arch}-root
 Summary: The RabbitMQ server
 
 %if 0%{?fedora} || 0%{?rhel} >= 7 || 0%{?suse_version} >= 1315
-Requires(pre): systemd
-Requires(post): systemd
-Requires(preun): systemd
+Requires(pre): systemd >= 218
+Requires(post): systemd >= 218
+Requires(preun): systemd >= 218
 %else
 Requires(post): %%REQUIRES%%
 Requires(pre): %%REQUIRES%%
