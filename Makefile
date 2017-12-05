@@ -14,6 +14,7 @@ PACKAGES_DIR ?= $(abspath PACKAGES)
 include plugins.mk
 
 DEPS = rabbit_common rabbit $(PLUGINS)
+ELIXIR_DEPS = rabbitmq_cli jsx
 
 DEP_PLUGINS = rabbit_common/mk/rabbitmq-dist.mk \
 	      rabbit_common/mk/rabbitmq-run.mk \
@@ -140,6 +141,11 @@ $(SOURCE_DIST): $(ERLANG_MK_RECURSIVE_DEPS_LIST)
 		fi; \
 		find "$$dep" -maxdepth 1 -name 'LICENSE-*' -exec cp '{}' $@/deps/licensing \; ; \
 		(cd $$dep; echo "$$(basename "$$dep") $$(git rev-parse HEAD) $$(git describe --tags --exact-match 2>/dev/null || git symbolic-ref -q --short HEAD)") >> $@/git-revisions.txt; \
+	done
+	$(verbose) for dep in $(ELIXIR_DEPS); do \
+	    cd deps/$$dep ; \
+	    echo y | DEPS_DIR=$@/deps mix deps.get ; \
+	    cd ../.. ; \
 	done
 	$(verbose) cat packaging/common/LICENSE.tail >> $@/LICENSE
 	$(verbose) find $@/deps/licensing -name 'LICENSE-*' -exec cp '{}' $@ \;
