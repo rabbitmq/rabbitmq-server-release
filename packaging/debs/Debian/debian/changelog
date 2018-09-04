@@ -1,3 +1,10 @@
+rabbitmq-server (3.6.16-2) unstable; urgency=low
+
+  * Add an upper limit for the range of compatible Erlang versions, marking
+    Erlang 21 as incompatible.
+
+ -- RabbitMQ Team <info@rabbitmq.com>  Tue, 04 Sep 2018 15:30:01 +0200
+
 rabbitmq-server (3.6.16-1) unstable; urgency=low
 
   * New Upstream Release.
