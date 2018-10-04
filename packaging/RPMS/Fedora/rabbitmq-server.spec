@@ -1,9 +1,10 @@
 %define debug_package %{nil}
 %define erlang_minver R16B-03
+%define erlang_maxver 21.0
 
 Name: rabbitmq-server
 Version: %%VERSION%%
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: MPLv1.1 and MIT and ASL 2.0 and BSD
 Group: %{group_tag}
 Source: http://www.rabbitmq.com/releases/rabbitmq-server/v%{upstream_version}/%{name}-%{upstream_version}.tar.xz
@@ -13,13 +14,13 @@ Source3: rabbitmq-server.service
 Source4: rabbitmq-server.tmpfiles
 URL: http://www.rabbitmq.com/
 BuildArch: noarch
-BuildRequires: erlang >= %{erlang_minver}, python-simplejson, xmlto, libxslt, gzip, sed, zip, rsync
+BuildRequires: erlang >= %{erlang_minver}, erlang < %{erlang_maxver}, python-simplejson, xmlto, libxslt, gzip, sed, zip, rsync
 
 %if 0%{?fedora} || 0%{?rhel} >= 7 || 0%{?suse_version} >= 1315
 BuildRequires:  systemd
 %endif
 
-Requires: erlang >= %{erlang_minver}, logrotate, socat
+Requires: erlang >= %{erlang_minver}, erlang < %{erlang_maxver}, logrotate, socat
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-%{_arch}-root
 Summary: The RabbitMQ server
 
@@ -203,6 +204,9 @@ systemctl try-restart %{name}.service >/dev/null 2>&1 || :
 rm -rf %{buildroot}
 
 %changelog
+* Tue Sep 04 2018 info@rabbitmq.com 3.6.16-2
+- Add an upper limit for the range of compatible Erlang versions, marking Erlang 21 as incompatible.
+
 * Wed Jun 13 2018 info@rabbitmq.com 3.6.16-1
 - New upstream release.
 
