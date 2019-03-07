@@ -189,7 +189,7 @@ done
 # expand correctly on debian machines
 if [ $1 -ge 1 ] ; then
     # Package upgrade, not uninstall
-    systemctl reload-or-restart %{name}.service >/dev/null 2>&1 || :
+    systemctl restart %{name}.service >/dev/null 2>&1 || :
 fi
 %else
 if [ $1 -gt 1 ]; then
