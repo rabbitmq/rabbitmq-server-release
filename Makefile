@@ -397,6 +397,7 @@ SCRIPTS = rabbitmq-defaults \
 	  rabbitmq-plugins \
 	  rabbitmq-diagnostics \
 	  rabbitmq-queues \
+	  rabbitmq-streams \
 	  rabbitmq-upgrade
 
 AUTOCOMPLETE_SCRIPTS = bash_autocomplete.sh zsh_autocomplete.sh
@@ -407,6 +408,7 @@ WINDOWS_SCRIPTS = rabbitmq-defaults.bat \
 		  rabbitmq-plugins.bat \
 		  rabbitmq-diagnostics.bat \
 		  rabbitmq-queues.bat \
+		  rabbitmq-streams.bat \
 		  rabbitmq-server.bat \
 		  rabbitmq-service.bat \
 		  rabbitmq-upgrade.bat \
