@@ -1,11 +1,4 @@
 #!/bin/sh
-#
-# rabbitmq-server RabbitMQ broker
-#
-# chkconfig: - 80 05
-# description: Manages RabbitMQ server
-#
-
 ### BEGIN INIT INFO
 # Provides:          rabbitmq-server
 # Required-Start:    $remote_fs $network
@@ -13,17 +6,20 @@
 # Default-Start: 2 3 4 5
 # Default-Stop: 0 1 6
 # Description:       RabbitMQ broker
-# Short-Description: Manages RabbitMQ server
+# Short-Description: Enable AMQP service provided by RabbitMQ broker
 ### END INIT INFO
 
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
 NAME=rabbitmq-server
 DAEMON=/usr/sbin/${NAME}
 CONTROL=/usr/sbin/rabbitmqctl
-DESC="message broker"
+DESC="RabbitMQ Messaging Server"
 USER=rabbitmq
+ROTATE_SUFFIX=
+INIT_LOG_DIR=/var/log/rabbitmq
 PID_FILE=/var/run/rabbitmq/pid
-RABBITMQ_LOG_BASE=/var/log/rabbitmq
+RABBITMQ_TIMEOUT=30
+
 
 test -x $DAEMON || exit 0
 test -x $CONTROL || exit 0
@@ -58,8 +54,8 @@ start_rabbitmq () {
         set +e
         RABBITMQ_PID_FILE=$PID_FILE start-stop-daemon --quiet \
             --chuid rabbitmq --start --exec $DAEMON \
-            --pidfile "$PID_FILE" --background
-        $CONTROL wait $PID_FILE >/dev/null 2>&1
+            --pidfile "$RABBITMQ_PID_FILE" --background
+        $CONTROL wait --timeout ${RABBITMQ_TIMEOUT} $PID_FILE >/dev/null 2>&1
         RETVAL=$?
         set -e
         if [ $RETVAL != 0 ] ; then
@@ -74,9 +70,7 @@ stop_rabbitmq () {
     status_rabbitmq quiet
     if [ $RETVAL = 0 ] ; then
         set +e
-        $CONTROL stop ${PID_FILE} \
-            > ${RABBITMQ_LOG_BASE}/shutdown_log \
-            2> ${RABBITMQ_LOG_BASE}/shutdown_err
+        $CONTROL stop ${PID_FILE} > ${INIT_LOG_DIR}/shutdown_log 2> ${INIT_LOG_DIR}/shutdown_err
         RETVAL=$?
         set -e
         if [ $RETVAL = 0 ] ; then
@@ -102,7 +96,7 @@ status_rabbitmq() {
 
 rotate_logs_rabbitmq() {
     set +e
-    $CONTROL -q rotate_logs
+    $CONTROL -q rotate_logs ${ROTATE_SUFFIX}
     if [ $? != 0 ] ; then
         RETVAL=1
     fi
@@ -143,7 +137,7 @@ start_stop_end() {
             RETVAL=0
             ;;
         *)
-            log_warning_msg "FAILED - check ${RABBITMQ_LOG_BASE}/startup_\{log, _err\}"
+            log_warning_msg "FAILED - check ${INIT_LOG_DIR}/startup_\{log, _err\}"
             log_end_msg 1
             ;;
     esac
