@@ -256,8 +256,6 @@ RUN ln -sf /opt/rabbitmq/plugins /plugins
 
 # set home so that any `--user` knows where to put the erlang cookie
 ENV HOME $RABBITMQ_DATA_DIR
-# Hint that the data (a.k.a. home dir) dir should be separate volume
-VOLUME $RABBITMQ_DATA_DIR
 
 # warning: the VM is running with native name encoding of latin1 which may cause Elixir to malfunction as it expects utf8. Please ensure your locale is set to UTF-8 (which can be verified by running "locale" in your shell)
 # Setting all environment variables that control language preferences, behaviour differs - https://www.gnu.org/software/gettext/manual/html_node/The-LANGUAGE-variable.html#The-LANGUAGE-variable
@@ -271,8 +269,8 @@ EXPOSE 4369 5671 5672 25672
 CMD ["rabbitmq-server"]
 
 # rabbitmq_management
-RUN rabbitmq-plugins enable --offline rabbitmq_management && \
-    rabbitmq-plugins is_enabled rabbitmq_management --offline
+RUN gosu rabbitmq rabbitmq-plugins enable --offline rabbitmq_management && \
+    gosu rabbitmq rabbitmq-plugins is_enabled rabbitmq_management --offline
 # extract "rabbitmqadmin" from inside the "rabbitmq_management-X.Y.Z.ez" plugin zipfile
 # see https://github.com/docker-library/rabbitmq/issues/207
 RUN set -eux; \
@@ -296,6 +294,14 @@ RUN set -eux; \
 	rabbitmqadmin --version
 EXPOSE 15671 15672
 
-RUN rabbitmq-plugins enable --offline rabbitmq_prometheus && \
-    rabbitmq-plugins is_enabled rabbitmq_prometheus --offline
+RUN gosu rabbitmq rabbitmq-plugins enable --offline rabbitmq_prometheus && \
+    gosu rabbitmq rabbitmq-plugins is_enabled rabbitmq_prometheus --offline
 EXPOSE 15692
+
+# Hint that the data (a.k.a. home dir) dir should be separate volume
+# We do this last, otherwise our plugin configuration will be thrown out,
+# as per https://docs.docker.com/engine/reference/builder/#volume
+# > Changing the volume from within the Dockerfile:
+# > If any build steps change the data within the volume after it has been
+# > declared, those changes will be discarded.
+VOLUME $RABBITMQ_DATA_DIR
